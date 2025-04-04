@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IdeaSpark - Creative Brainstorming Hub</title>
+    <link rel="stylesheet" href="my-ideas.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="theme-toggle">
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <div class="container">
+        <header class="animated-header">
+            <div class="logo">
+                <i class="fas fa-lightbulb"></i>
+                <h1>MindSharp</h1>
+            </div>
+            <p>Where Creative Minds Collide</p>
+            <div class="inspiration-quote">
+                <span id="quote">"Innovation is seeing what everybody has seen and thinking what nobody has thought."</span>
+            </div>
+        </header>
+
+        <div class="idea-input-section glass-morphism">
+            <div class="input-container">
+                <div class="input-group">
+                    <input type="text" id="ideaInput" placeholder="Share your brilliant idea...">
+                    <div class="input-emoji-picker" id="emojiPicker">😊</div>
+                </div>
+                <select id="categorySelect" class="category-select">
+                    <option value="innovation">💡 Innovation</option>
+                    <option value="research">🔬 Research</option>
+                    <option value="project">📊 Project</option>
+                    <option value="event">🎉 Event</option>
+                    <option value="challenge">🎯 Challenge</option>
+                </select>
+                <div class="tag-input">
+                    <input type="text" id="tagInput" placeholder="Add tags...">
+                    <div class="tags-container" id="tagsContainer"></div>
+                </div>
+                <button id="addIdeaBtn" class="pulse-button">
+                    <i class="fas fa-plus"></i> Share Idea
+                </button>
+            </div>
+        </div>
+
+        <div class="visualization-toggle">
+            <button class="view-btn active" data-view="cards">
+                <i class="fas fa-th-large"></i>
+            </button>
+            <button class="view-btn" data-view="mindmap">
+                <i class="fas fa-project-diagram"></i>
+            </button>
+        </div>
+
+        <div class="filter-section glass-morphism">
+            <div class="filter-group">
+                <button class="filter-btn active" data-category="all">
+                    <i class="fas fa-globe"></i> All
+                </button>
+                <button class="filter-btn" data-category="innovation">
+                    <i class="fas fa-lightbulb"></i> Innovation
+                </button>
+                <button class="filter-btn" data-category="research">
+                    <i class="fas fa-microscope"></i> Research
+                </button>
+                <button class="filter-btn" data-category="project">
+                    <i class="fas fa-tasks"></i> Project
+                </button>
+                <button class="filter-btn" data-category="event">
+                    <i class="fas fa-calendar"></i> Event
+                </button>
+                <button class="filter-btn" data-category="challenge">
+                    <i class="fas fa-flag"></i> Challenge
+                </button>
+            </div>
+            <div class="sort-group">
+                <select id="sortSelect">
+                    <option value="newest">Newest First</option>
+                    <option value="popular">Most Popular</option>
+                    <option value="trending">Trending</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="view-container">
+            <div id="ideasContainer" class="ideas-container active"></div>
+            <div id="mindmapContainer" class="mindmap-container">
+                <canvas id="mindmapCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+    <script src="my-ideas.js"></script>
+</body>
+</html> 
