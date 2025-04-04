@@ -1,0 +1,2503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Collaborative Brainstorming</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f5f6fa;
+            --accent-color: #34495e;
+            --success-color: #2ecc71;
+            --warning-color: #f1c40f;
+            --danger-color: #e74c3c;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--secondary-color);
+        }
+
+        .sidebar {
+            background-color: white;
+            height: 100vh;
+            padding: 20px;
+            border-right: 1px solid #eee;
+            overflow-y: auto;
+        }
+
+        .workspace {
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .idea-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: move;
+            transition: transform 0.2s;
+            width: 250px;
+        }
+
+        .idea-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .idea-card .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .tag {
+            background-color: var(--secondary-color);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+        }
+
+        .tool-button {
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--secondary-color);
+            transition: all 0.3s;
+        }
+
+        .tool-button:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .timer {
+            font-size: 2em;
+            color: var(--accent-color);
+            text-align: center;
+            padding: 10px;
+            background: var(--secondary-color);
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .participants {
+            margin-top: 20px;
+        }
+
+        .participant-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 5px;
+            border: 2px solid var(--primary-color);
+            transition: transform 0.2s;
+        }
+
+        .participant-avatar:hover {
+            transform: scale(1.1);
+        }
+
+        .ai-suggestion {
+            background-color: #e8f5fe;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid var(--primary-color);
+            transition: all 0.3s;
+        }
+
+        .ai-suggestion:hover {
+            background-color: #d1eafe;
+            cursor: pointer;
+        }
+
+        .category-header {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .reaction-button {
+            background: none;
+            border: none;
+            padding: 5px;
+            margin: 0 2px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .reaction-button:hover {
+            transform: scale(1.2);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: #eee;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: var(--success-color);
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+
+        .emoji-picker {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .emoji-button {
+            padding: 5px;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+
+        .canvas-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 10px 0;
+            background: white;
+        }
+
+        .toolbar {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+        }
+
+        .quick-note {
+            min-height: 100px;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: move;
+            transition: all 0.2s;
+            width: 200px;
+        }
+
+        .quick-note:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .quick-note .note-content {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .quick-note .note-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .quick-note .delete-note {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .quick-note:hover .delete-note {
+            opacity: 1;
+        }
+
+        .mind-map-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-height: 80vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-xl {
+            max-width: 95vw;
+        }
+
+        .mind-map-toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: var(--secondary-color);
+            border-radius: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .mind-map-node {
+            position: absolute;
+            background: white;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 12px 20px;
+            min-width: 150px;
+            cursor: move;
+            user-select: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .mind-map-node:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .mind-map-node.central {
+            background: var(--primary-color);
+            color: white;
+            min-width: 200px;
+            padding: 15px 25px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        #mindMapCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        #mindMapNodes {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 80vh;
+        }
+
+        .connection-handle {
+            width: 10px;
+            height: 10px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+        }
+
+        .connection-handle.right {
+            right: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .connection-handle.left {
+            left: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Add smooth transitions */
+        .idea-card, .quick-note, .mind-map-node {
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Dragging styles */
+        .dragging {
+            opacity: 0.5;
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        /* Drop zone highlight */
+        .drop-zone {
+            border: 2px dashed var(--primary-color);
+            background-color: rgba(74, 144, 226, 0.1);
+            border-radius: 8px;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .new-item {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .highlight {
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        /* Interactive hover effects */
+        .tool-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .idea-card:hover .card-actions,
+        .quick-note:hover .note-actions {
+            opacity: 1;
+        }
+
+        .card-actions,
+        .note-actions {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Keyboard shortcut tooltips */
+        [data-shortcut]:after {
+            content: attr(data-shortcut);
+            position: absolute;
+            bottom: -25px;
+            right: 0;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        [data-shortcut]:hover:after {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 sidebar">
+                <h3 class="mb-4">Study Tools</h3>
+                
+                <!-- Session Controls -->
+                <div class="mb-4">
+                    <button class="tool-button" id="newSession">
+                        <i class="fas fa-plus"></i> New Study Session
+                    </button>
+                    <button class="tool-button" id="joinSession">
+                        <i class="fas fa-sign-in-alt"></i> Join Session
+                    </button>
+                </div>
+
+                <!-- Tools -->
+                <div class="mb-4">
+                    <button class="tool-button" id="addIdea" data-bs-toggle="modal" data-bs-target="#newIdeaModal">
+                        <i class="fas fa-lightbulb"></i> Add Idea
+                    </button>
+                    <button class="tool-button" id="addMindMap">
+                        <i class="fas fa-project-diagram"></i> Mind Map
+                    </button>
+                    <button class="tool-button" id="addStickyNote">
+                        <i class="fas fa-sticky-note"></i> Quick Note
+                    </button>
+                    <button class="tool-button" id="addDrawing">
+                        <i class="fas fa-paint-brush"></i> Sketch
+                    </button>
+                </div>
+
+                <!-- Study Timer -->
+                <div class="mb-4">
+                    <h5>Study Timer</h5>
+                    <div class="timer" id="timer">25:00</div>
+                    <button class="tool-button" id="startTimer">
+                        <i class="fas fa-play"></i> Start Pomodoro
+                    </button>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Templates -->
+                <div class="mb-4">
+                    <h5>Study Templates</h5>
+                    <select class="form-select mb-2" id="templateSelect">
+                        <option value="blank">Blank Canvas</option>
+                        <option value="cornell">Cornell Notes</option>
+                        <option value="concept-map">Concept Map</option>
+                        <option value="compare-contrast">Compare & Contrast</option>
+                        <option value="timeline">Timeline</option>
+                        <option value="question-answer">Q&A Format</option>
+                        <option value="project-plan">Project Planner</option>
+                    </select>
+                </div>
+
+                <!-- Study Goals -->
+                <div class="mb-4">
+                    <h5>Session Goals</h5>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="goalProgress" style="width: 0%"></div>
+                    </div>
+                    <button class="tool-button" id="addGoal">
+                        <i class="fas fa-tasks"></i> Add Goal
+                    </button>
+                </div>
+
+                <!-- Participants -->
+                <div class="participants">
+                    <h5>Study Group</h5>
+                    <div id="participantsList" class="d-flex flex-wrap">
+                        <!-- Sample participants -->
+                        <img src="https://ui-avatars.com/api/?name=John+D" class="participant-avatar" title="John D.">
+                        <img src="https://ui-avatars.com/api/?name=Sarah+M" class="participant-avatar" title="Sarah M.">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Workspace -->
+            <div class="col-md-9 workspace">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Interactive Study Session</h2>
+                    <div>
+                        <button class="btn btn-outline-primary me-2" id="shareSession">
+                            <i class="fas fa-share"></i> Share
+                        </button>
+                        <button class="btn btn-outline-success" id="exportNotes">
+                            <i class="fas fa-download"></i> Export Notes
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search and Filter -->
+                <div class="mb-4">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search notes and ideas...">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Filter
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">My Ideas</a></li>
+                            <li><a class="dropdown-item" href="#">Group Ideas</a></li>
+                            <li><a class="dropdown-item" href="#">Recent First</a></li>
+                            <li><a class="dropdown-item" href="#">Most Liked</a></li>
+                        </ul>
+                        <button class="btn btn-outline-secondary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- AI Study Assistant -->
+                <div class="ai-suggestion mb-4">
+                    <i class="fas fa-robot me-2"></i>
+                    <span>Study Assistant: Need help organizing your thoughts? Try these prompts:</span>
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-outline-primary me-2">Generate Summary</button>
+                        <button class="btn btn-sm btn-outline-primary me-2">Create Quiz</button>
+                        <button class="btn btn-sm btn-outline-primary">Suggest Connections</button>
+                    </div>
+                </div>
+
+                <!-- Canvas for Mind Maps and Drawings -->
+                <div class="canvas-container mb-4" style="display: none;">
+                    <div class="toolbar">
+                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-pen"></i></button>
+                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-eraser"></i></button>
+                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-shapes"></i></button>
+                        <input type="color" class="form-control form-control-sm" style="width: 50px;">
+                    </div>
+                    <canvas id="drawingCanvas" style="width: 100%; height: 400px;"></canvas>
+                </div>
+
+                <!-- Ideas Workspace -->
+                <div id="ideasWorkspace" class="d-flex flex-wrap">
+                    <!-- Sample Idea Card -->
+                    <div class="idea-card">
+                        <div class="d-flex justify-content-between mb-2">
+                            <h5>Key Concept</h5>
+                            <div>
+                                <button class="reaction-button">👍 3</button>
+                                <button class="reaction-button">💡 2</button>
+                            </div>
+                        </div>
+                        <p>This is a sample idea card. Click to edit or drag to reorganize.</p>
+                        <div class="tags">
+                            <span class="tag">Important</span>
+                            <span class="tag">Chapter 1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for New Idea -->
+    <div class="modal fade" id="newIdeaModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Idea</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newIdeaForm">
+                        <div class="mb-3">
+                            <label class="form-label">Title</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tags</label>
+                            <input type="text" class="form-control" placeholder="Separate tags with commas">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Priority</label>
+                            <select class="form-select">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="submitIdea">Add Idea</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Quick Note -->
+    <div class="modal fade" id="quickNoteModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning bg-opacity-10">
+                    <h5 class="modal-title">
+                        <i class="fas fa-sticky-note text-warning"></i> Quick Note
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="quickNoteForm">
+                        <div class="mb-3">
+                            <textarea class="form-control" rows="4" placeholder="Write your quick note here..." id="quickNoteText"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary quick-color" data-color="#ffffff">⚪</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary quick-color" data-color="#fff3cd">🟡</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary quick-color" data-color="#d1e7dd">🟢</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary quick-color" data-color="#cfe2ff">🔵</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary quick-color" data-color="#f8d7da">🔴</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-warning" id="submitQuickNote">Add Note</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Mind Map -->
+    <div class="modal fade" id="mindMapModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-primary bg-opacity-10">
+                    <h5 class="modal-title">
+                        <i class="fas fa-project-diagram text-primary"></i> Mind Map
+                    </h5>
+                    <div class="ms-auto me-3">
+                        <button class="btn btn-sm btn-outline-secondary me-2" id="zoomIn">
+                            <i class="fas fa-search-plus"></i> Zoom In
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary me-2" id="zoomOut">
+                            <i class="fas fa-search-minus"></i> Zoom Out
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" id="resetZoom">
+                            <i class="fas fa-compress-arrows-alt"></i> Reset
+                        </button>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="mind-map-toolbar">
+                        <button class="btn btn-sm btn-outline-primary" id="addNode">
+                            <i class="fas fa-plus"></i> Add Node
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" id="addConnection">
+                            <i class="fas fa-link"></i> Connect Nodes
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" id="deleteNode">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                        <div class="vr mx-2"></div>
+                        <button class="btn btn-sm btn-outline-secondary" id="autoLayout">
+                            <i class="fas fa-magic"></i> Auto Layout
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" id="clearAll">
+                            <i class="fas fa-broom"></i> Clear All
+                        </button>
+                    </div>
+                    <div class="mind-map-container">
+                        <canvas id="mindMapCanvas"></canvas>
+                        <div id="mindMapNodes"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveMindMap">
+                        <i class="fas fa-save"></i> Save Mind Map
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Share -->
+    <div class="modal fade" id="shareModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary bg-opacity-10">
+                    <h5 class="modal-title">
+                        <i class="fas fa-share text-primary"></i> Share Study Session
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Share Link -->
+                    <div class="mb-4">
+                        <label class="form-label">Session Link</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="shareLink" value="https://study-session.com/s/abc123" readonly>
+                            <button class="btn btn-outline-primary" id="copyLink">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Invite by Email -->
+                    <div class="mb-4">
+                        <label class="form-label">Invite by Email</label>
+                        <div class="input-group mb-2">
+                            <input type="email" class="form-control" id="inviteEmail" placeholder="Enter email address">
+                            <button class="btn btn-primary" id="sendInvite">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </div>
+                        <div id="invitedList" class="d-flex flex-wrap gap-2 mt-2">
+                            <!-- Sample invited users -->
+                            <span class="badge bg-primary d-flex align-items-center">
+                                john@example.com
+                                <button class="btn btn-link text-white p-0 ms-2" style="font-size: 12px;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Share Options -->
+                    <div class="mb-4">
+                        <label class="form-label">Share Settings</label>
+                        <div class="list-group">
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0">Allow Editing</h6>
+                                    <small class="text-muted">Participants can modify content</small>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="allowEditing" checked>
+                                </div>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0">Public Access</h6>
+                                    <small class="text-muted">Anyone with the link can view</small>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="publicAccess">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Share -->
+                    <div class="d-flex gap-2 mb-3">
+                        <button class="btn btn-outline-primary flex-grow-1" id="shareWhatsApp">
+                            <i class="fab fa-whatsapp"></i> WhatsApp
+                        </button>
+                        <button class="btn btn-outline-primary flex-grow-1" id="shareEmail">
+                            <i class="fas fa-envelope"></i> Email
+                        </button>
+                        <button class="btn btn-outline-primary flex-grow-1" id="shareTeams">
+                            <i class="fab fa-microsoft"></i> Teams
+                        </button>
+                    </div>
+
+                    <!-- QR Code -->
+                    <div class="text-center">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://study-session.com/s/abc123" 
+                             alt="Session QR Code" 
+                             class="img-fluid" 
+                             style="max-width: 150px;">
+                        <div class="mt-2">
+                            <small class="text-muted">Scan to join on mobile device</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveShareSettings">
+                        <i class="fas fa-save"></i> Save Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Export -->
+    <div class="modal fade" id="exportModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success bg-opacity-10">
+                    <h5 class="modal-title">
+                        <i class="fas fa-download text-success"></i> Export Study Notes
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Export Format Selection -->
+                    <div class="mb-4">
+                        <label class="form-label">Export Format</label>
+                        <select class="form-select" id="exportFormat">
+                            <option value="pdf">PDF Document</option>
+                            <option value="word">Word Document</option>
+                            <option value="markdown">Markdown</option>
+                            <option value="html">HTML</option>
+                        </select>
+                    </div>
+
+                    <!-- Content Selection -->
+                    <div class="mb-4">
+                        <label class="form-label">Content to Export</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="exportIdeas" checked>
+                            <label class="form-check-label" for="exportIdeas">Ideas</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="exportNotes" checked>
+                            <label class="form-check-label" for="exportNotes">Quick Notes</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="exportMindMap" checked>
+                            <label class="form-check-label" for="exportMindMap">Mind Maps</label>
+                        </div>
+                    </div>
+
+                    <!-- Export Options -->
+                    <div class="mb-4">
+                        <label class="form-label">Export Options</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="includeMetadata" checked>
+                            <label class="form-check-label" for="includeMetadata">Include metadata (date, author)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="includeTags" checked>
+                            <label class="form-check-label" for="includeTags">Include tags</label>
+                        </div>
+                    </div>
+
+                    <!-- Export Preview -->
+                    <div class="border rounded p-3 bg-light">
+                        <small class="text-muted">Preview</small>
+                        <div id="exportPreview" class="mt-2" style="max-height: 150px; overflow-y: auto;">
+                            <!-- Preview content will be populated here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" id="startExport">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for New Study Session -->
+    <div class="modal fade" id="newSessionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary bg-opacity-10">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus text-primary"></i> Create New Study Session
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newSessionForm">
+                        <!-- Session Details -->
+                        <div class="mb-3">
+                            <label class="form-label">Session Name</label>
+                            <input type="text" class="form-control" id="sessionName" required 
+                                placeholder="e.g., Biology Chapter 5 Review">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Subject/Course</label>
+                            <input type="text" class="form-control" id="sessionSubject" 
+                                placeholder="e.g., Biology 101">
+                        </div>
+
+                        <!-- Session Type -->
+                        <div class="mb-3">
+                            <label class="form-label">Session Type</label>
+                            <select class="form-select" id="sessionType">
+                                <option value="study">Study Session</option>
+                                <option value="review">Review Session</option>
+                                <option value="project">Project Planning</option>
+                                <option value="brainstorm">Brainstorming</option>
+                                <option value="exam">Exam Preparation</option>
+                            </select>
+                        </div>
+
+                        <!-- Duration -->
+                        <div class="mb-3">
+                            <label class="form-label">Expected Duration</label>
+                            <select class="form-select" id="sessionDuration">
+                                <option value="30">30 minutes</option>
+                                <option value="60" selected>1 hour</option>
+                                <option value="90">1.5 hours</option>
+                                <option value="120">2 hours</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+
+                        <!-- Template Selection -->
+                        <div class="mb-3">
+                            <label class="form-label">Start with Template</label>
+                            <select class="form-select" id="sessionTemplate">
+                                <option value="blank">Blank Canvas</option>
+                                <option value="cornell">Cornell Notes</option>
+                                <option value="mindmap">Mind Map</option>
+                                <option value="flashcards">Flashcards</option>
+                                <option value="outline">Outline</option>
+                            </select>
+                        </div>
+
+                        <!-- Privacy Settings -->
+                        <div class="mb-3">
+                            <label class="form-label">Privacy Settings</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="privateSession">
+                                <label class="form-check-label" for="privateSession">
+                                    Private Session (Invite Only)
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Goals Section -->
+                        <div class="mb-3">
+                            <label class="form-label">Session Goals</label>
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control" id="goalInput" 
+                                    placeholder="Add a goal">
+                                <button class="btn btn-outline-primary" type="button" id="addGoalBtn">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div id="goalsList" class="list-group">
+                                <!-- Goals will be added here -->
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="createSession">
+                        <i class="fas fa-plus"></i> Create Session
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Join Session -->
+    <div class="modal fade" id="joinSessionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-info bg-opacity-10">
+                    <h5 class="modal-title">
+                        <i class="fas fa-sign-in-alt text-info"></i> Join Study Session
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Session Code Entry -->
+                    <div class="mb-4">
+                        <label class="form-label">Session Code or Link</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="sessionCode" 
+                                placeholder="Enter session code or paste link">
+                            <button class="btn btn-outline-info" id="scanQR">
+                                <i class="fas fa-qr-code"></i> Scan QR
+                            </button>
+                        </div>
+                        <small class="text-muted">Example: ABC123 or https://study-session.com/s/abc123</small>
+                    </div>
+
+                    <!-- Participant Info -->
+                    <div class="mb-4">
+                        <label class="form-label">Your Name</label>
+                        <input type="text" class="form-control" id="participantName" 
+                            placeholder="Enter your name">
+                    </div>
+
+                    <!-- Role Selection -->
+                    <div class="mb-4">
+                        <label class="form-label">Join as</label>
+                        <select class="form-select" id="participantRole">
+                            <option value="student">Student</option>
+                            <option value="observer">Observer (View Only)</option>
+                            <option value="moderator">Moderator</option>
+                        </select>
+                    </div>
+
+                    <!-- Camera/Mic Permissions -->
+                    <div class="mb-4">
+                        <label class="form-label">Device Permissions</label>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="enableCamera">
+                            <label class="form-check-label" for="enableCamera">
+                                Enable Camera
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="enableMic">
+                            <label class="form-check-label" for="enableMic">
+                                Enable Microphone
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Session Preview -->
+                    <div id="sessionPreview" class="border rounded p-3 bg-light mb-4" style="display: none;">
+                        <h6 class="mb-3">Session Details</h6>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-users text-info me-2"></i>
+                            <span id="participantCount">0 participants</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-clock text-info me-2"></i>
+                            <span id="sessionDuration">Duration: 1 hour</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-shield-alt text-info me-2"></i>
+                            <span id="sessionPrivacy">Private Session</span>
+                        </div>
+                    </div>
+
+                    <!-- QR Scanner -->
+                    <div id="qrScanner" class="text-center p-3 border rounded" style="display: none;">
+                        <video id="qrVideo" style="width: 100%; max-width: 300px;"></video>
+                        <button class="btn btn-outline-secondary mt-2" id="cancelScan">
+                            <i class="fas fa-times"></i> Cancel Scan
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-info" id="joinSessionBtn">
+                        <i class="fas fa-sign-in-alt"></i> Join Session
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Required Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tooltips and popovers
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Pomodoro Timer functionality
+            let timerInterval;
+            let seconds = 1500; // 25 minutes
+            const progressBar = document.querySelector('.progress-bar');
+            
+            document.getElementById('startTimer').addEventListener('click', function() {
+                if (!timerInterval) {
+                    timerInterval = setInterval(updateTimer, 1000);
+                    this.innerHTML = '<i class="fas fa-stop"></i> Stop Timer';
+                } else {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    this.innerHTML = '<i class="fas fa-play"></i> Start Pomodoro';
+                }
+            });
+
+            function updateTimer() {
+                seconds--;
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = seconds % 60;
+                const progress = ((1500 - seconds) / 1500) * 100;
+                
+                document.getElementById('timer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+                progressBar.style.width = `${progress}%`;
+
+                if (seconds <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    alert('Time for a break!');
+                    seconds = 1500;
+                    document.getElementById('startTimer').innerHTML = '<i class="fas fa-play"></i> Start Pomodoro';
+                }
+            }
+
+            // Drawing Canvas Setup
+            const canvas = document.getElementById('drawingCanvas');
+            const ctx = canvas.getContext('2d');
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+
+            function startDrawing(e) {
+                isDrawing = true;
+                [lastX, lastY] = [e.offsetX, e.offsetY];
+            }
+
+            function draw(e) {
+                if (!isDrawing) return;
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(e.offsetX, e.offsetY);
+                ctx.stroke();
+                [lastX, lastY] = [e.offsetX, e.offsetY];
+            }
+
+            function stopDrawing() {
+                isDrawing = false;
+            }
+
+            // Add new idea functionality
+            document.getElementById('submitIdea').addEventListener('click', function() {
+                const form = document.getElementById('newIdeaForm');
+                const title = form.querySelector('input[type="text"]').value;
+                const description = form.querySelector('textarea').value;
+                const tags = form.querySelector('input[placeholder="Separate tags with commas"]').value;
+                const priority = form.querySelector('select').value;
+
+                addIdeaToWorkspace({
+                    title: title,
+                    description: description,
+                    tags: tags.split(',').map(tag => tag.trim()),
+                    priority: priority
+                });
+
+                const modal = bootstrap.Modal.getInstance(document.getElementById('newIdeaModal'));
+                modal.hide();
+                form.reset();
+            });
+
+            // Handle idea cards
+            function addIdeaToWorkspace(idea) {
+                const ideaElement = document.createElement('div');
+                ideaElement.className = 'idea-card';
+                ideaElement.draggable = true;
+                
+                ideaElement.innerHTML = `
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5>${idea.title}</h5>
+                        <div>
+                            <button class="reaction-button">👍 0</button>
+                            <button class="reaction-button">💡 0</button>
+                        </div>
+                    </div>
+                    <p>${idea.description}</p>
+                    <div class="tags">
+                        ${idea.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                `;
+
+                document.getElementById('ideasWorkspace').appendChild(ideaElement);
+                
+                // Add drag and drop functionality
+                ideaElement.addEventListener('dragstart', handleDragStart);
+                ideaElement.addEventListener('dragend', handleDragEnd);
+            }
+
+            // Drag and drop functionality
+            function handleDragStart(e) {
+                this.style.opacity = '0.4';
+                e.dataTransfer.effectAllowed = 'move';
+            }
+
+            function handleDragEnd(e) {
+                this.style.opacity = '1';
+            }
+
+            // Template switching
+            document.getElementById('templateSelect').addEventListener('change', function(e) {
+                const template = e.target.value;
+                // Clear existing workspace
+                document.getElementById('ideasWorkspace').innerHTML = '';
+                
+                switch(template) {
+                    case 'blank':
+                        // Leave workspace empty for blank canvas
+                        break;
+                        
+                    case 'cornell':
+                        // Add Cornell notes structure
+                        const cornellTemplate = `
+                            <div class="row g-0 border rounded">
+                                <div class="col-3 border-end p-3">
+                                    <h6 class="mb-3">Key Questions/Cues</h6>
+                                    <div class="quick-note" style="width: 100%">
+                                        <div class="note-content" contenteditable="true">Add key questions and cues here...</div>
+                                    </div>
+                                </div>
+                                <div class="col-9 p-3">
+                                    <h6 class="mb-3">Notes</h6>
+                                    <div class="quick-note" style="width: 100%">
+                                        <div class="note-content" contenteditable="true">Take detailed notes here...</div>
+                                    </div>
+                                    <div class="mt-4">
+                                        <h6>Summary</h6>
+                                        <div class="quick-note" style="width: 100%">
+                                            <div class="note-content" contenteditable="true">Write a summary of the main points...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        document.getElementById('ideasWorkspace').innerHTML = cornellTemplate;
+                        break;
+                        
+                    case 'concept-map':
+                        // Create a concept map structure
+                        const conceptMapTemplate = `
+                            <div class="mind-map-container">
+                                <canvas id="conceptMapCanvas"></canvas>
+                                <div id="conceptMapNodes">
+                                    <div class="mind-map-node central" style="left: 45%; top: 40%;">
+                                        <div contenteditable="true">Main Concept</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        document.getElementById('ideasWorkspace').innerHTML = conceptMapTemplate;
+                        break;
+                        
+                    case 'compare-contrast':
+                        // Add compare and contrast template
+                        const compareTemplate = `
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3">
+                                        <h5 class="text-center mb-3">Topic A</h5>
+                                        <div class="quick-note" style="width: 100%">
+                                            <div class="note-content" contenteditable="true">List characteristics of Topic A...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3">
+                                        <h5 class="text-center mb-3">Topic B</h5>
+                                        <div class="quick-note" style="width: 100%">
+                                            <div class="note-content" contenteditable="true">List characteristics of Topic B...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="border rounded p-3 mt-3">
+                                        <h5 class="text-center mb-3">Similarities & Differences</h5>
+                                        <div class="quick-note" style="width: 100%">
+                                            <div class="note-content" contenteditable="true">Note similarities and differences here...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        document.getElementById('ideasWorkspace').innerHTML = compareTemplate;
+                        break;
+                        
+                    case 'timeline':
+                        // Add timeline template
+                        const timelineTemplate = `
+                            <div class="timeline-container">
+                                <div class="quick-note mb-3" style="width: 100%">
+                                    <h6>Event 1</h6>
+                                    <div class="note-content" contenteditable="true">Describe the first event...</div>
+                                    <small class="text-muted">Date/Time</small>
+                                </div>
+                                <div class="quick-note mb-3" style="width: 100%">
+                                    <h6>Event 2</h6>
+                                    <div class="note-content" contenteditable="true">Describe the second event...</div>
+                                    <small class="text-muted">Date/Time</small>
+                                </div>
+                                <div class="quick-note" style="width: 100%">
+                                    <h6>Event 3</h6>
+                                    <div class="note-content" contenteditable="true">Describe the third event...</div>
+                                    <small class="text-muted">Date/Time</small>
+                                </div>
+                            </div>
+                        `;
+                        document.getElementById('ideasWorkspace').innerHTML = timelineTemplate;
+                        break;
+                        
+                    case 'question-answer':
+                        // Add Q&A template
+                        const qaTemplate = `
+                            <div class="qa-container">
+                                <div class="idea-card mb-3" style="width: 100%">
+                                    <h6>Question 1</h6>
+                                    <div contenteditable="true" class="mb-2">Type your question here...</div>
+                                    <hr>
+                                    <p contenteditable="true">Type your answer here...</p>
+                                </div>
+                                <div class="idea-card mb-3" style="width: 100%">
+                                    <h6>Question 2</h6>
+                                    <div contenteditable="true" class="mb-2">Type your question here...</div>
+                                    <hr>
+                                    <p contenteditable="true">Type your answer here...</p>
+                                </div>
+                                <div class="idea-card" style="width: 100%">
+                                    <h6>Question 3</h6>
+                                    <div contenteditable="true" class="mb-2">Type your question here...</div>
+                                    <hr>
+                                    <p contenteditable="true">Type your answer here...</p>
+                                </div>
+                            </div>
+                        `;
+                        document.getElementById('ideasWorkspace').innerHTML = qaTemplate;
+                        break;
+                        
+                    case 'project-plan':
+                        // Add project planner template
+                        const projectTemplate = `
+                            <div class="project-container">
+                                <div class="border rounded p-3 mb-3">
+                                    <h5>Project Overview</h5>
+                                    <div class="quick-note" style="width: 100%">
+                                        <div class="note-content" contenteditable="true">Describe project objectives and goals...</div>
+                                    </div>
+                                </div>
+                                <div class="border rounded p-3 mb-3">
+                                    <h5>Tasks & Milestones</h5>
+                                    <div class="quick-note" style="width: 100%">
+                                        <div class="note-content" contenteditable="true">List key tasks and deadlines...</div>
+                                    </div>
+                                </div>
+                                <div class="border rounded p-3">
+                                    <h5>Resources & Notes</h5>
+                                    <div class="quick-note" style="width: 100%">
+                                        <div class="note-content" contenteditable="true">Add resources and additional notes...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        document.getElementById('ideasWorkspace').innerHTML = projectTemplate;
+                        break;
+                }
+                
+                // Show success message
+                showToast(`Template changed to ${template.replace('-', ' ')}!`, 'success');
+            });
+
+            // Quick Note functionality
+            let selectedNoteColor = '#ffffff';
+            
+            // Add click handler for Quick Note button
+            document.getElementById('addStickyNote').addEventListener('click', function() {
+                const quickNoteModal = new bootstrap.Modal(document.getElementById('quickNoteModal'));
+                quickNoteModal.show();
+            });
+
+            // Color selection for quick notes
+            document.querySelectorAll('.quick-color').forEach(button => {
+                button.addEventListener('click', function() {
+                    selectedNoteColor = this.dataset.color;
+                    // Update visual feedback
+                    document.querySelectorAll('.quick-color').forEach(btn => 
+                        btn.classList.remove('active', 'border-dark'));
+                    this.classList.add('active', 'border-dark');
+                });
+            });
+
+            // Handle quick note submission
+            document.getElementById('submitQuickNote').addEventListener('click', function() {
+                const noteText = document.getElementById('quickNoteText').value.trim();
+                if (noteText) {
+                    addQuickNote(noteText, selectedNoteColor);
+                    // Reset and close modal
+                    document.getElementById('quickNoteText').value = '';
+                    selectedNoteColor = '#ffffff';
+                    document.querySelectorAll('.quick-color').forEach(btn => 
+                        btn.classList.remove('active', 'border-dark'));
+                    bootstrap.Modal.getInstance(document.getElementById('quickNoteModal')).hide();
+                }
+            });
+
+            function addQuickNote(text, color) {
+                const note = document.createElement('div');
+                note.className = 'quick-note';
+                note.draggable = true;
+                note.style.backgroundColor = color;
+                
+                const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                note.innerHTML = `
+                    <div class="note-content">${text}</div>
+                    <div class="note-footer">
+                        <span>${currentTime}</span>
+                        <button class="btn btn-sm btn-link text-danger delete-note p-0">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                `;
+
+                // Add to workspace
+                document.getElementById('ideasWorkspace').appendChild(note);
+
+                // Add drag functionality
+                note.addEventListener('dragstart', handleDragStart);
+                note.addEventListener('dragend', handleDragEnd);
+
+                // Add delete functionality
+                note.querySelector('.delete-note').addEventListener('click', function() {
+                    if (confirm('Delete this note?')) {
+                        note.remove();
+                    }
+                });
+            }
+
+            // Mind Map functionality
+            document.getElementById('addMindMap').addEventListener('click', function() {
+                const mindMapModal = new bootstrap.Modal(document.getElementById('mindMapModal'));
+                mindMapModal.show();
+                initializeMindMap();
+            });
+
+            function initializeMindMap() {
+                const container = document.querySelector('.mind-map-container');
+                const canvas = document.getElementById('mindMapCanvas');
+                const ctx = canvas.getContext('2d');
+                let scale = 1;
+                
+                // Set canvas size
+                function resizeCanvas() {
+                    canvas.width = container.offsetWidth;
+                    canvas.height = container.offsetHeight;
+                    canvas.style.width = '100%';
+                    canvas.style.height = '100%';
+                    drawConnections();
+                }
+                
+                // Initialize canvas size
+                resizeCanvas();
+                
+                // Handle window resize
+                window.addEventListener('resize', resizeCanvas);
+                
+                // Zoom functionality
+                document.getElementById('zoomIn').addEventListener('click', () => {
+                    scale = Math.min(scale * 1.2, 2);
+                    document.getElementById('mindMapNodes').style.transform = `scale(${scale})`;
+                });
+                
+                document.getElementById('zoomOut').addEventListener('click', () => {
+                    scale = Math.max(scale / 1.2, 0.5);
+                    document.getElementById('mindMapNodes').style.transform = `scale(${scale})`;
+                });
+                
+                document.getElementById('resetZoom').addEventListener('click', () => {
+                    scale = 1;
+                    document.getElementById('mindMapNodes').style.transform = 'scale(1)';
+                });
+
+                // Create central node if it doesn't exist
+                if (!document.querySelector('.mind-map-node.central')) {
+                    createNode('Main Topic', container.offsetWidth / 2 - 50, container.offsetHeight / 2 - 25, true);
+                }
+
+                // Add node button handler
+                document.getElementById('addNode').addEventListener('click', function() {
+                    const x = Math.random() * (container.offsetWidth - 150) + 50;
+                    const y = Math.random() * (container.offsetHeight - 100) + 50;
+                    createNode('New Node', x, y);
+                });
+
+                // Toggle connection mode
+                document.getElementById('addConnection').addEventListener('click', function() {
+                    connectionMode = !connectionMode;
+                    this.classList.toggle('active');
+                    container.style.cursor = connectionMode ? 'crosshair' : 'default';
+                });
+
+                function createNode(text, x, y, isCentral = false) {
+                    const node = document.createElement('div');
+                    node.className = 'mind-map-node' + (isCentral ? ' central' : '');
+                    node.innerHTML = `
+                        <div class="connection-handle left"></div>
+                        <div contenteditable="true">${text}</div>
+                        <div class="connection-handle right"></div>
+                    `;
+                    node.style.left = x + 'px';
+                    node.style.top = y + 'px';
+                    document.getElementById('mindMapNodes').appendChild(node);
+                    
+                    // Make node draggable
+                    node.addEventListener('mousedown', startDragging);
+                    
+                    // Handle connection points
+                    const handles = node.querySelectorAll('.connection-handle');
+                    handles.forEach(handle => {
+                        handle.addEventListener('mousedown', function(e) {
+                            if (connectionMode) {
+                                e.stopPropagation();
+                                if (!connectionStart) {
+                                    connectionStart = {
+                                        node: node,
+                                        handle: handle,
+                                        x: handle.getBoundingClientRect().left + 5,
+                                        y: handle.getBoundingClientRect().top + 5
+                                    };
+                                }
+                            }
+                        });
+                    });
+
+                    return node;
+                }
+
+                function startDragging(e) {
+                    if (connectionMode) return;
+                    
+                    selectedNode = this;
+                    isDragging = true;
+                    startX = e.clientX - selectedNode.offsetLeft;
+                    startY = e.clientY - selectedNode.offsetTop;
+                    
+                    document.addEventListener('mousemove', drag);
+                    document.addEventListener('mouseup', stopDragging);
+                }
+
+                function drag(e) {
+                    if (!isDragging) return;
+                    
+                    const x = e.clientX - startX;
+                    const y = e.clientY - startY;
+                    
+                    selectedNode.style.left = x + 'px';
+                    selectedNode.style.top = y + 'px';
+                    
+                    drawConnections();
+                }
+
+                function stopDragging() {
+                    isDragging = false;
+                    document.removeEventListener('mousemove', drag);
+                    document.removeEventListener('mouseup', stopDragging);
+                }
+
+                function drawConnections() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.strokeStyle = '#4a90e2';
+                    ctx.lineWidth = 2;
+
+                    // Draw all existing connections
+                    const connections = [];
+                    document.querySelectorAll('.mind-map-node').forEach(node => {
+                        if (node.dataset.connections) {
+                            const nodeConnections = JSON.parse(node.dataset.connections);
+                            nodeConnections.forEach(conn => {
+                                const targetNode = document.querySelector(`[data-node-id="${conn.targetId}"]`);
+                                if (targetNode) {
+                                    drawConnection(node, targetNode);
+                                }
+                            });
+                        }
+                    });
+
+                    // Draw connection in progress
+                    if (connectionStart) {
+                        ctx.beginPath();
+                        ctx.moveTo(connectionStart.x, connectionStart.y);
+                        ctx.lineTo(currentMouseX, currentMouseY);
+                        ctx.stroke();
+                    }
+                }
+
+                function drawConnection(node1, node2) {
+                    const rect1 = node1.getBoundingClientRect();
+                    const rect2 = node2.getBoundingClientRect();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(rect1.right, rect1.top + rect1.height/2);
+                    ctx.lineTo(rect2.left, rect2.top + rect2.height/2);
+                    ctx.stroke();
+                }
+
+                // Handle mouse move for drawing connection line
+                let currentMouseX, currentMouseY;
+                container.addEventListener('mousemove', function(e) {
+                    if (connectionMode && connectionStart) {
+                        currentMouseX = e.clientX - container.getBoundingClientRect().left;
+                        currentMouseY = e.clientY - container.getBoundingClientRect().top;
+                        drawConnections();
+                    }
+                });
+
+                // Handle mouse up for completing connection
+                container.addEventListener('mouseup', function(e) {
+                    if (connectionMode && connectionStart) {
+                        const endNode = e.target.closest('.mind-map-node');
+                        if (endNode && endNode !== connectionStart.node) {
+                            // Create connection
+                            const connection = {
+                                sourceId: connectionStart.node.dataset.nodeId,
+                                targetId: endNode.dataset.nodeId
+                            };
+                            
+                            // Store connection data
+                            let connections = connectionStart.node.dataset.connections ? 
+                                JSON.parse(connectionStart.node.dataset.connections) : [];
+                            connections.push(connection);
+                            connectionStart.node.dataset.connections = JSON.stringify(connections);
+                            
+                            drawConnections();
+                        }
+                        connectionStart = null;
+                        drawConnections();
+                    }
+                });
+
+                // Delete node handler
+                document.getElementById('deleteNode').addEventListener('click', function() {
+                    if (selectedNode && !selectedNode.classList.contains('central')) {
+                        selectedNode.remove();
+                        drawConnections();
+                    }
+                });
+
+                // Initial draw
+                drawConnections();
+            }
+
+            // Share functionality
+            document.getElementById('shareSession').addEventListener('click', function() {
+                const shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
+                shareModal.show();
+            });
+
+            // Copy link functionality
+            document.getElementById('copyLink').addEventListener('click', function() {
+                const shareLink = document.getElementById('shareLink');
+                shareLink.select();
+                document.execCommand('copy');
+                
+                // Show feedback
+                this.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-copy"></i> Copy';
+                }, 2000);
+            });
+
+            // Send invite functionality
+            document.getElementById('sendInvite').addEventListener('click', function() {
+                const emailInput = document.getElementById('inviteEmail');
+                const email = emailInput.value.trim();
+                
+                if (email && isValidEmail(email)) {
+                    // Add email to invited list
+                    const invitedList = document.getElementById('invitedList');
+                    const badge = document.createElement('span');
+                    badge.className = 'badge bg-primary d-flex align-items-center';
+                    badge.innerHTML = `
+                        ${email}
+                        <button class="btn btn-link text-white p-0 ms-2" style="font-size: 12px;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    
+                    invitedList.appendChild(badge);
+                    emailInput.value = '';
+                    
+                    // Add remove functionality
+                    badge.querySelector('button').addEventListener('click', function() {
+                        badge.remove();
+                    });
+                    
+                    // Show success message
+                    showToast('Invitation sent successfully!', 'success');
+                } else {
+                    showToast('Please enter a valid email address', 'error');
+                }
+            });
+
+            // Quick share buttons
+            document.getElementById('shareWhatsApp').addEventListener('click', function() {
+                const url = encodeURIComponent(document.getElementById('shareLink').value);
+                window.open(`https://wa.me/?text=Join%20my%20study%20session:%20${url}`);
+            });
+
+            document.getElementById('shareEmail').addEventListener('click', function() {
+                const url = document.getElementById('shareLink').value;
+                window.location.href = `mailto:?subject=Join%20my%20study%20session&body=Click%20here%20to%20join:%20${url}`;
+            });
+
+            document.getElementById('shareTeams').addEventListener('click', function() {
+                const url = encodeURIComponent(document.getElementById('shareLink').value);
+                window.open(`https://teams.microsoft.com/share?url=${url}`);
+            });
+
+            // Helper functions
+            function isValidEmail(email) {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            }
+
+            function showToast(message, type = 'info') {
+                const toastContainer = document.createElement('div');
+                toastContainer.style.position = 'fixed';
+                toastContainer.style.bottom = '20px';
+                toastContainer.style.right = '20px';
+                toastContainer.style.zIndex = '1050';
+                
+                const toast = document.createElement('div');
+                toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'}`;
+                toast.setAttribute('role', 'alert');
+                toast.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                `;
+                
+                toastContainer.appendChild(toast);
+                document.body.appendChild(toastContainer);
+                
+                const bsToast = new bootstrap.Toast(toast);
+                bsToast.show();
+                
+                toast.addEventListener('hidden.bs.toast', function() {
+                    toastContainer.remove();
+                });
+            }
+
+            // Save share settings
+            document.getElementById('saveShareSettings').addEventListener('click', function() {
+                const settings = {
+                    allowEditing: document.getElementById('allowEditing').checked,
+                    publicAccess: document.getElementById('publicAccess').checked
+                };
+                
+                // Show success message
+                showToast('Share settings saved successfully!', 'success');
+                
+                // Close modal after saving
+                bootstrap.Modal.getInstance(document.getElementById('shareModal')).hide();
+            });
+
+            // Export functionality
+            document.getElementById('exportNotes').addEventListener('click', function() {
+                const exportModal = new bootstrap.Modal(document.getElementById('exportModal'));
+                exportModal.show();
+                updateExportPreview();
+            });
+
+            // Update export preview when options change
+            document.querySelectorAll('#exportFormat, #exportIdeas, #exportNotes, #exportMindMap, #includeMetadata, #includeTags')
+                .forEach(element => {
+                    element.addEventListener('change', updateExportPreview);
+                });
+
+            function updateExportPreview() {
+                const preview = document.getElementById('exportPreview');
+                const format = document.getElementById('exportFormat').value;
+                const includeIdeas = document.getElementById('exportIdeas').checked;
+                const includeNotes = document.getElementById('exportNotes').checked;
+                const includeMindMap = document.getElementById('exportMindMap').checked;
+                const includeMetadata = document.getElementById('includeMetadata').checked;
+                
+                let previewContent = '';
+                
+                if (includeMetadata) {
+                    previewContent += `<div class="text-muted mb-2">
+                        <small>Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</small>
+                    </div>`;
+                }
+
+                if (includeIdeas) {
+                    const ideas = document.querySelectorAll('.idea-card');
+                    previewContent += `<div class="mb-2">
+                        <strong>Ideas (${ideas.length})</strong>
+                        <div class="ps-3">
+                            ${Array.from(ideas).slice(0, 2).map(idea => 
+                                `• ${idea.querySelector('h5').textContent}`
+                            ).join('<br>')}
+                            ${ideas.length > 2 ? '<br>...' : ''}
+                        </div>
+                    </div>`;
+                }
+
+                if (includeNotes) {
+                    const notes = document.querySelectorAll('.quick-note');
+                    previewContent += `<div class="mb-2">
+                        <strong>Quick Notes (${notes.length})</strong>
+                        <div class="ps-3">
+                            ${Array.from(notes).slice(0, 2).map(note => 
+                                `• ${note.querySelector('.note-content').textContent.slice(0, 30)}...`
+                            ).join('<br>')}
+                            ${notes.length > 2 ? '<br>...' : ''}
+                        </div>
+                    </div>`;
+                }
+
+                if (includeMindMap) {
+                    const nodes = document.querySelectorAll('.mind-map-node');
+                    previewContent += `<div class="mb-2">
+                        <strong>Mind Map Nodes (${nodes.length})</strong>
+                        <div class="ps-3">
+                            ${Array.from(nodes).slice(0, 2).map(node => 
+                                `• ${node.querySelector('[contenteditable]').textContent}`
+                            ).join('<br>')}
+                            ${nodes.length > 2 ? '<br>...' : ''}
+                        </div>
+                    </div>`;
+                }
+
+                preview.innerHTML = previewContent;
+            }
+
+            // Handle export
+            document.getElementById('startExport').addEventListener('click', function() {
+                const format = document.getElementById('exportFormat').value;
+                const includeIdeas = document.getElementById('exportIdeas').checked;
+                const includeNotes = document.getElementById('exportNotes').checked;
+                const includeMindMap = document.getElementById('exportMindMap').checked;
+                const includeMetadata = document.getElementById('includeMetadata').checked;
+                const includeTags = document.getElementById('includeTags').checked;
+
+                // Collect content
+                let content = '';
+                
+                if (includeMetadata) {
+                    content += `Study Session Export\n`;
+                    content += `Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}\n\n`;
+                }
+
+                if (includeIdeas) {
+                    content += `Ideas:\n`;
+                    document.querySelectorAll('.idea-card').forEach(idea => {
+                        content += `- ${idea.querySelector('h5').textContent}\n`;
+                        content += `  ${idea.querySelector('p').textContent}\n`;
+                        if (includeTags) {
+                            const tags = Array.from(idea.querySelectorAll('.tag')).map(tag => tag.textContent);
+                            if (tags.length) content += `  Tags: ${tags.join(', ')}\n`;
+                        }
+                        content += '\n';
+                    });
+                }
+
+                if (includeNotes) {
+                    content += `Quick Notes:\n`;
+                    document.querySelectorAll('.quick-note').forEach(note => {
+                        content += `- ${note.querySelector('.note-content').textContent}\n`;
+                        content += `  Created: ${note.querySelector('.note-footer span').textContent}\n\n`;
+                    });
+                }
+
+                if (includeMindMap) {
+                    content += `Mind Map Nodes:\n`;
+                    document.querySelectorAll('.mind-map-node').forEach(node => {
+                        content += `- ${node.querySelector('[contenteditable]').textContent}\n`;
+                    });
+                }
+
+                // Create and download file
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `study-session-export.${format === 'markdown' ? 'md' : 'txt'}`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                // Show success message
+                showToast('Export completed successfully!', 'success');
+                
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('exportModal')).hide();
+            });
+
+            // New Session functionality
+            document.getElementById('newSession').addEventListener('click', function() {
+                const newSessionModal = new bootstrap.Modal(document.getElementById('newSessionModal'));
+                newSessionModal.show();
+            });
+
+            // Handle adding goals
+            document.getElementById('addGoalBtn').addEventListener('click', function() {
+                const goalInput = document.getElementById('goalInput');
+                const goalText = goalInput.value.trim();
+                
+                if (goalText) {
+                    const goalsList = document.getElementById('goalsList');
+                    const goalItem = document.createElement('div');
+                    goalItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    goalItem.innerHTML = `
+                        <span>${goalText}</span>
+                        <button class="btn btn-sm btn-link text-danger" onclick="this.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    goalsList.appendChild(goalItem);
+                    goalInput.value = '';
+                }
+            });
+
+            // Handle session creation
+            document.getElementById('createSession').addEventListener('click', function() {
+                const sessionName = document.getElementById('sessionName').value.trim();
+                const sessionSubject = document.getElementById('sessionSubject').value.trim();
+                const sessionType = document.getElementById('sessionType').value;
+                const sessionDuration = document.getElementById('sessionDuration').value;
+                const sessionTemplate = document.getElementById('sessionTemplate').value;
+                const isPrivate = document.getElementById('privateSession').checked;
+                
+                if (!sessionName) {
+                    showToast('Please enter a session name', 'error');
+                    return;
+                }
+
+                // Collect goals
+                const goals = Array.from(document.getElementById('goalsList').children)
+                    .map(goal => goal.querySelector('span').textContent);
+
+                // Create session object
+                const session = {
+                    name: sessionName,
+                    subject: sessionSubject,
+                    type: sessionType,
+                    duration: sessionDuration,
+                    template: sessionTemplate,
+                    isPrivate: isPrivate,
+                    goals: goals,
+                    createdAt: new Date().toISOString(),
+                    id: 'session_' + Math.random().toString(36).substr(2, 9)
+                };
+
+                // Clear existing workspace
+                document.getElementById('ideasWorkspace').innerHTML = '';
+                
+                // Update session title
+                document.querySelector('.workspace h2').textContent = sessionName;
+                
+                // Apply template if selected
+                applyTemplate(sessionTemplate);
+                
+                // Update timer if duration is set
+                if (sessionDuration !== 'custom') {
+                    const minutes = parseInt(sessionDuration);
+                    seconds = minutes * 60;
+                    document.getElementById('timer').textContent = 
+                        `${Math.floor(minutes/60)}:${(minutes%60).toString().padStart(2, '0')}`;
+                }
+
+                // Show success message
+                showToast('New study session created successfully!', 'success');
+                
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('newSessionModal')).hide();
+                
+                // Reset form
+                document.getElementById('newSessionForm').reset();
+                document.getElementById('goalsList').innerHTML = '';
+            });
+
+            // Function to apply template
+            function applyTemplate(template) {
+                switch(template) {
+                    case 'cornell':
+                        // Add Cornell notes structure
+                        const cornellTemplate = document.createElement('div');
+                        cornellTemplate.className = 'row g-0';
+                        cornellTemplate.innerHTML = `
+                            <div class="col-3 border-end p-3">
+                                <h6 class="mb-3">Key Questions/Cues</h6>
+                                <div class="quick-note" style="width: 100%">
+                                    <div class="note-content" contenteditable="true">Add questions here...</div>
+                                </div>
+                            </div>
+                            <div class="col-9 p-3">
+                                <h6 class="mb-3">Notes</h6>
+                                <div class="quick-note" style="width: 100%">
+                                    <div class="note-content" contenteditable="true">Start taking notes...</div>
+                                </div>
+                                <div class="mt-4">
+                                    <h6>Summary</h6>
+                                    <div class="quick-note" style="width: 100%">
+                                        <div class="note-content" contenteditable="true">Write summary here...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        document.getElementById('ideasWorkspace').appendChild(cornellTemplate);
+                        break;
+                        
+                    case 'mindmap':
+                        // Show mind map
+                        document.getElementById('addMindMap').click();
+                        break;
+                        
+                    case 'flashcards':
+                        // Add flashcard structure
+                        const flashcardTemplate = document.createElement('div');
+                        flashcardTemplate.className = 'd-flex flex-wrap';
+                        flashcardTemplate.innerHTML = `
+                            <div class="idea-card">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <h5>Sample Flashcard</h5>
+                                    <button class="btn btn-sm btn-link" onclick="this.closest('.idea-card').querySelector('p').classList.toggle('d-none')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <p class="d-none">Answer goes here...</p>
+                            </div>
+                        `;
+                        document.getElementById('ideasWorkspace').appendChild(flashcardTemplate);
+                        break;
+                        
+                    case 'outline':
+                        // Add outline structure
+                        const outlineTemplate = document.createElement('div');
+                        outlineTemplate.className = 'p-3';
+                        outlineTemplate.innerHTML = `
+                            <div class="quick-note" style="width: 100%">
+                                <div class="note-content">
+                                    <h6>I. Main Topic</h6>
+                                    <div class="ps-4">
+                                        <p>A. Subtopic 1</p>
+                                        <p>B. Subtopic 2</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        document.getElementById('ideasWorkspace').appendChild(outlineTemplate);
+                        break;
+                }
+            }
+
+            // Join Session functionality
+            document.getElementById('joinSession').addEventListener('click', function() {
+                const joinSessionModal = new bootstrap.Modal(document.getElementById('joinSessionModal'));
+                joinSessionModal.show();
+            });
+
+            // Handle session code input
+            document.getElementById('sessionCode').addEventListener('input', function() {
+                const code = this.value.trim();
+                if (code.length >= 6 || code.includes('study-session.com')) {
+                    // Show session preview
+                    document.getElementById('sessionPreview').style.display = 'block';
+                    fetchSessionDetails(code);
+                } else {
+                    document.getElementById('sessionPreview').style.display = 'none';
+                }
+            });
+
+            // QR Code scanning
+            document.getElementById('scanQR').addEventListener('click', function() {
+                const qrScanner = document.getElementById('qrScanner');
+                qrScanner.style.display = 'block';
+                initQRScanner();
+            });
+
+            document.getElementById('cancelScan').addEventListener('click', function() {
+                const qrScanner = document.getElementById('qrScanner');
+                qrScanner.style.display = 'none';
+                stopQRScanner();
+            });
+
+            let videoStream = null;
+
+            function initQRScanner() {
+                const video = document.getElementById('qrVideo');
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                    .then(function(stream) {
+                        videoStream = stream;
+                        video.srcObject = stream;
+                        video.play();
+                        // Here you would typically implement QR code detection
+                        // For this example, we'll just simulate it
+                        setTimeout(() => {
+                            const simulatedCode = 'ABC123';
+                            document.getElementById('sessionCode').value = simulatedCode;
+                            document.getElementById('sessionCode').dispatchEvent(new Event('input'));
+                            stopQRScanner();
+                            document.getElementById('qrScanner').style.display = 'none';
+                        }, 3000);
+                    })
+                    .catch(function(error) {
+                        showToast('Unable to access camera', 'error');
+                        console.error('Error accessing camera:', error);
+                    });
+            }
+
+            function stopQRScanner() {
+                if (videoStream) {
+                    videoStream.getTracks().forEach(track => track.stop());
+                    videoStream = null;
+                }
+            }
+
+            // Fetch session details
+            function fetchSessionDetails(code) {
+                // Simulate API call to fetch session details
+                const mockSessionDetails = {
+                    participants: Math.floor(Math.random() * 10) + 1,
+                    duration: '1 hour',
+                    isPrivate: true,
+                    name: 'Study Group Session',
+                    subject: 'Mathematics'
+                };
+
+                document.getElementById('participantCount').textContent = 
+                    `${mockSessionDetails.participants} participants`;
+                document.getElementById('sessionDuration').textContent = 
+                    `Duration: ${mockSessionDetails.duration}`;
+                document.getElementById('sessionPrivacy').textContent = 
+                    mockSessionDetails.isPrivate ? 'Private Session' : 'Public Session';
+            }
+
+            // Handle join button click
+            document.getElementById('joinSessionBtn').addEventListener('click', function() {
+                const sessionCode = document.getElementById('sessionCode').value.trim();
+                const participantName = document.getElementById('participantName').value.trim();
+                const role = document.getElementById('participantRole').value;
+                const enableCamera = document.getElementById('enableCamera').checked;
+                const enableMic = document.getElementById('enableMic').checked;
+
+                if (!sessionCode) {
+                    showToast('Please enter a session code', 'error');
+                    return;
+                }
+
+                if (!participantName) {
+                    showToast('Please enter your name', 'error');
+                    return;
+                }
+
+                // Create participant object
+                const participant = {
+                    name: participantName,
+                    role: role,
+                    camera: enableCamera,
+                    microphone: enableMic,
+                    joinedAt: new Date().toISOString()
+                };
+
+                // Add participant avatar
+                const participantsList = document.getElementById('participantsList');
+                const avatar = document.createElement('img');
+                avatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(participantName)}`;
+                avatar.className = 'participant-avatar';
+                avatar.title = participantName;
+                participantsList.appendChild(avatar);
+
+                // Update session title
+                document.querySelector('.workspace h2').textContent = 'Study Session: ' + sessionCode;
+
+                // Show success message
+                showToast('Successfully joined the session!', 'success');
+
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('joinSessionModal')).hide();
+
+                // Reset form
+                document.getElementById('sessionCode').value = '';
+                document.getElementById('participantName').value = '';
+                document.getElementById('participantRole').value = 'student';
+                document.getElementById('enableCamera').checked = false;
+                document.getElementById('enableMic').checked = false;
+                document.getElementById('sessionPreview').style.display = 'none';
+            });
+
+            // Add Goal functionality
+            document.getElementById('addGoal').addEventListener('click', function() {
+                const goalModal = new bootstrap.Modal(document.createElement('div'));
+                const modalContent = document.createElement('div');
+                modalContent.innerHTML = `
+                    <div class="modal fade" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-primary bg-opacity-10">
+                                    <h5 class="modal-title">
+                                        <i class="fas fa-tasks text-primary"></i> Add Study Goal
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="addGoalForm">
+                                        <div class="mb-3">
+                                            <label class="form-label">Goal Description</label>
+                                            <input type="text" class="form-control" id="goalDescription" placeholder="Enter your study goal">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Priority</label>
+                                            <select class="form-select" id="goalPriority">
+                                                <option value="low">Low</option>
+                                                <option value="medium" selected>Medium</option>
+                                                <option value="high">High</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Target Completion</label>
+                                            <input type="datetime-local" class="form-control" id="goalDeadline">
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-primary" id="saveGoal">Add Goal</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modalContent);
+                const modal = new bootstrap.Modal(modalContent.querySelector('.modal'));
+                
+                // Handle save goal
+                modalContent.querySelector('#saveGoal').addEventListener('click', function() {
+                    const description = modalContent.querySelector('#goalDescription').value.trim();
+                    const priority = modalContent.querySelector('#goalPriority').value;
+                    const deadline = modalContent.querySelector('#goalDeadline').value;
+                    
+                    if (!description) {
+                        showToast('Please enter a goal description', 'error');
+                        return;
+                    }
+                    
+                    // Create goal element
+                    const goalElement = document.createElement('div');
+                    goalElement.className = 'card mb-2';
+                    goalElement.innerHTML = `
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" onchange="updateGoalProgress()">
+                                    <label class="form-check-label ${priority === 'high' ? 'text-danger' : priority === 'medium' ? 'text-warning' : ''}">
+                                        ${description}
+                                    </label>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    ${deadline ? `<small class="text-muted me-2">${new Date(deadline).toLocaleDateString()}</small>` : ''}
+                                    <button class="btn btn-sm btn-link text-danger" onclick="this.closest('.card').remove(); updateGoalProgress()">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add goal to the list
+                    const goalsList = document.createElement('div');
+                    goalsList.id = 'activeGoals';
+                    goalsList.className = 'mb-3';
+                    if (!document.getElementById('activeGoals')) {
+                        document.querySelector('.sidebar .mb-4:nth-child(5)').appendChild(goalsList);
+                    }
+                    document.getElementById('activeGoals').appendChild(goalElement);
+                    
+                    // Update progress
+                    updateGoalProgress();
+                    
+                    // Show success message and close modal
+                    showToast('Goal added successfully!', 'success');
+                    modal.hide();
+                    modalContent.remove();
+                });
+                
+                modal.show();
+            });
+
+            // Function to update goal progress
+            function updateGoalProgress() {
+                const goals = document.querySelectorAll('#activeGoals .form-check-input');
+                const completedGoals = document.querySelectorAll('#activeGoals .form-check-input:checked');
+                const progress = goals.length ? (completedGoals.length / goals.length) * 100 : 0;
+                
+                document.getElementById('goalProgress').style.width = `${progress}%`;
+                
+                // Update color based on progress
+                const progressBar = document.getElementById('goalProgress');
+                if (progress === 100) {
+                    progressBar.classList.remove('bg-warning', 'bg-danger');
+                    progressBar.classList.add('bg-success');
+                } else if (progress >= 50) {
+                    progressBar.classList.remove('bg-success', 'bg-danger');
+                    progressBar.classList.add('bg-warning');
+                } else {
+                    progressBar.classList.remove('bg-success', 'bg-warning');
+                    progressBar.classList.add('bg-danger');
+                }
+            }
+
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey || e.metaKey) {
+                    switch(e.key.toLowerCase()) {
+                        case 'n':
+                            e.preventDefault();
+                            document.getElementById('newSession').click();
+                            break;
+                        case 'j':
+                            e.preventDefault();
+                            document.getElementById('joinSession').click();
+                            break;
+                        case 'i':
+                            e.preventDefault();
+                            document.getElementById('addIdea').click();
+                            break;
+                        case 'm':
+                            e.preventDefault();
+                            document.getElementById('addMindMap').click();
+                            break;
+                        case 's':
+                            e.preventDefault();
+                            document.getElementById('shareSession').click();
+                            break;
+                        case 'e':
+                            e.preventDefault();
+                            document.getElementById('exportNotes').click();
+                            break;
+                    }
+                }
+            });
+
+            // Enhanced drag and drop functionality
+            function initializeDragAndDrop() {
+                const draggableItems = document.querySelectorAll('.idea-card, .quick-note');
+                const dropZones = document.querySelectorAll('.workspace, .sidebar');
+
+                draggableItems.forEach(item => {
+                    item.addEventListener('dragstart', handleDragStart);
+                    item.addEventListener('dragend', handleDragEnd);
+                    item.addEventListener('dragenter', handleDragEnter);
+                    item.addEventListener('dragleave', handleDragLeave);
+                    item.addEventListener('drop', handleDrop);
+                });
+
+                dropZones.forEach(zone => {
+                    zone.addEventListener('dragover', handleDragOver);
+                    zone.addEventListener('dragenter', handleDragEnter);
+                    zone.addEventListener('dragleave', handleDragLeave);
+                    zone.addEventListener('drop', handleDrop);
+                });
+            }
+
+            function handleDragStart(e) {
+                this.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', this.id);
+            }
+
+            function handleDragEnd(e) {
+                this.classList.remove('dragging');
+                document.querySelectorAll('.drop-zone').forEach(zone => zone.classList.remove('drop-zone'));
+            }
+
+            function handleDragOver(e) {
+                e.preventDefault();
+            }
+
+            function handleDragEnter(e) {
+                e.preventDefault();
+                if (this.classList.contains('workspace') || this.classList.contains('sidebar')) {
+                    this.classList.add('drop-zone');
+                }
+            }
+
+            function handleDragLeave(e) {
+                if (this.classList.contains('workspace') || this.classList.contains('sidebar')) {
+                    this.classList.remove('drop-zone');
+                }
+            }
+
+            function handleDrop(e) {
+                e.preventDefault();
+                const draggedId = e.dataTransfer.getData('text/plain');
+                const draggedElement = document.getElementById(draggedId);
+                
+                if (draggedElement && (this.classList.contains('workspace') || this.classList.contains('sidebar'))) {
+                    this.appendChild(draggedElement);
+                    draggedElement.classList.add('highlight');
+                    setTimeout(() => draggedElement.classList.remove('highlight'), 500);
+                }
+                
+                document.querySelectorAll('.drop-zone').forEach(zone => zone.classList.remove('drop-zone'));
+            }
+
+            // Enhanced idea card creation
+            function addIdeaToWorkspace(idea) {
+                const ideaElement = document.createElement('div');
+                ideaElement.className = 'idea-card new-item';
+                ideaElement.id = 'idea-' + Date.now();
+                ideaElement.draggable = true;
+                
+                ideaElement.innerHTML = `
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5 contenteditable="true">${idea.title}</h5>
+                        <div class="card-actions">
+                            <button class="btn btn-sm btn-link" onclick="toggleEdit(this)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-link" onclick="duplicateCard(this)">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <button class="btn btn-sm btn-link text-danger" onclick="deleteCard(this)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <p contenteditable="true">${idea.description}</p>
+                    <div class="tags">
+                        ${idea.tags.map(tag => `
+                            <span class="tag" onclick="editTag(this)" title="Click to edit">
+                                ${tag}
+                            </span>
+                        `).join('')}
+                        <button class="btn btn-sm btn-link" onclick="addTag(this)">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="mt-2 d-flex justify-content-between">
+                        <div class="reactions">
+                            <button class="reaction-button" onclick="handleReaction(this)">👍 0</button>
+                            <button class="reaction-button" onclick="handleReaction(this)">💡 0</button>
+                            <button class="reaction-button" onclick="handleReaction(this)">❤️ 0</button>
+                        </div>
+                        <small class="text-muted">
+                            ${new Date().toLocaleTimeString()}
+                        </small>
+                    </div>
+                `;
+
+                document.getElementById('ideasWorkspace').appendChild(ideaElement);
+                initializeDragAndDrop();
+            }
+
+            // Card interaction functions
+            function toggleEdit(button) {
+                const card = button.closest('.idea-card');
+                card.classList.toggle('editing');
+                card.querySelectorAll('[contenteditable]').forEach(element => {
+                    element.focus();
+                });
+            }
+
+            function duplicateCard(button) {
+                const card = button.closest('.idea-card');
+                const clone = card.cloneNode(true);
+                clone.id = 'idea-' + Date.now();
+                clone.classList.add('new-item');
+                card.parentNode.insertBefore(clone, card.nextSibling);
+                initializeDragAndDrop();
+            }
+
+            function deleteCard(button) {
+                const card = button.closest('.idea-card');
+                card.style.animation = 'fadeIn 0.5s ease-out reverse';
+                setTimeout(() => card.remove(), 500);
+            }
+
+            function editTag(tag) {
+                const newText = prompt('Edit tag:', tag.textContent.trim());
+                if (newText) {
+                    tag.textContent = newText;
+                    tag.classList.add('highlight');
+                }
+            }
+
+            function addTag(button) {
+                const newTag = prompt('Enter new tag:');
+                if (newTag) {
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'tag new-item';
+                    tagElement.onclick = () => editTag(tagElement);
+                    tagElement.textContent = newTag;
+                    button.parentNode.insertBefore(tagElement, button);
+                }
+            }
+
+            function handleReaction(button) {
+                const count = parseInt(button.textContent.match(/\d+/)[0]) + 1;
+                button.textContent = button.textContent.replace(/\d+/, count);
+                button.classList.add('highlight');
+            }
+
+            // Initialize interactive features
+            document.addEventListener('DOMContentLoaded', function() {
+                // ... existing DOMContentLoaded code ...
+                
+                initializeDragAndDrop();
+                
+                // Add keyboard shortcut hints
+                document.getElementById('newSession').setAttribute('data-shortcut', 'Ctrl+N');
+                document.getElementById('joinSession').setAttribute('data-shortcut', 'Ctrl+J');
+                document.getElementById('addIdea').setAttribute('data-shortcut', 'Ctrl+I');
+                document.getElementById('addMindMap').setAttribute('data-shortcut', 'Ctrl+M');
+                document.getElementById('shareSession').setAttribute('data-shortcut', 'Ctrl+S');
+                document.getElementById('exportNotes').setAttribute('data-shortcut', 'Ctrl+E');
+            });
+        });
+    </script>
+</body>
+</html>
